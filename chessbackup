@@ -1,0 +1,162 @@
+from chess import*
+
+class tree:
+   def __init__(self,x):
+      self.store=[x,[]]
+   def AddSuccessor(self,x):
+      self.store[1]=self.store[1]+[x]
+
+T=genBoard()
+tree=tree(T)
+for i in range(0,63,1):
+   if T[i]>=20:
+      accum=GetPieceLegalMoves(T,T[i])
+      for j in range(0,len(accum),1):
+         GetLegalMoves(T.T[i],T[j])
+         tree.AddSuccessor(printBoard())
+
+while True:
+   print(printBoard(T))
+   moveW=int(input('White Move?'))
+   if (moveW>63) or (moveW<0):
+      break
+      print("not valid")
+   else:
+      accum=GetPieceLegalMoves(T,moveW)
+      for i in range(0,len(accum),1):
+         print(accum[i])
+      moveW1=int(input('move to?'))
+      while GetLegalMoves(T,moveW,moveW1)==False:
+         moveW1=int(input('move to?'))
+   state=analyzeboard(T)
+   if state==1:
+      print("white won!")
+   print(printBoard(T))
+   a=[]
+   L=GetPlayerPositions(T,20)
+   for moves in L:
+      for i in moves:
+         if IsPositionUnderThreat(T,i,B)==False:
+            accum+=[i]
+   state=analyzeboard(T)
+   if state==2:
+      print("black won!")
+  
+
+
+
+def AIanalyze(board):
+   black=0
+   white=0
+   accum=[]
+   for j in range(0,len(GetAILegalMoves(board)),1):
+      for k in range(0,len(GetAILegalMoves(board)[j]),1):
+         a=0
+         GetLegalMoves(board,GetAILegalMoves(board)[j][0],GetAILegalMoves(board)[j][k])
+         for i in range(15,47,1):
+            if board[i]>=20:
+               black=black+board[i]-20
+            elif board[i]>=10 and board[i]<=20:
+               white=white+board[i]-10
+            accum+=[(black-white)]
+         accum[a]+=GetAILegalMoves(board)[j][0]
+         a=a+1
+   return accum
+               
+
+ blackmove=AIanalyze(board)
+   movechosen=0
+   for i in range(0,len(blackmove),1):
+      for j in range(0,len(blackmove),1):
+         if blackmove[i][1]>blackmove[j][1]:
+            movechosen=blackmove[i][1]
+            GetLegalMoves(T,blackmove[i][0],movechosen)
+   state=analyzeboard(T)
+   if state==2:
+      print("you lose")
+
+
+
+def minmax_tree(board):
+   accum=[]
+   tree=minmax(B)
+  # score=AIanalyze(board)
+  # tree.AddSuccessor(score)
+   for i in range(0,63,1):
+      if board[i]>=20:
+         move=GetPieceLegalMoves(board[i])
+         if board[i]==25:
+            move-=IsPositionUnderThreat(board,i,W)
+         for j in range(0,len(move),1):
+            accum+=[AIanalyze(GetLegalMoves(board,board[i],move[j]))]
+            temp=minmax(W)
+            temp.AddTree(accum,i,j)
+   tree.minmax_move()
+   return tree
+
+def minmax(board):
+   T=minmax(B)
+   accum=[]
+   move=[]
+   a=0
+   depth=0
+   pos1=0
+   pos2=0
+   while depth<7:
+      for i in range(0,63,1):
+         if board[i]>=20:
+            move=GetPieceLegalMoves(board[i])
+            if board[i]==25:
+               move-=IsPositionUnderThreat(board,i,W)
+            for j in range(0,len(move),1):
+               a=AIanalyze(GetLegalMoves(board,board[i],move[j]))
+               accum+=[a]
+               for k in range(0,len(accum),1):
+                  T.AddTree(accum[k])
+      depth+=1
+   accum=[]
+   for i in range(0,63,1):
+      if board[i]>=20:
+         move=GetPieceLegalMoves(board[i])
+         for j in range(0,len(move),1):
+            a=AIanalyze(GetLegalMoves(board,board[i],move[j]))
+            accum+=[a]
+            for k in range(0,len(accum),1):
+               if accum[k]==T.minmax_move():
+                  pos1=board[i]
+                  pos2=move[j]
+   return [pos1,pos2]
+
+def minmax(board):
+   T=minmax(B)
+   accum=[]
+   move=[]
+   a=0
+   depth=0
+   pos1=0
+   pos2=0
+   while depth<7:
+      for i in range(0,63,1):
+         if board[i]>=20:
+            move=GetPieceLegalMoves(board[i])
+            if board[i]==25:
+               move-=IsPositionUnderThreat(board,i,W)
+            for j in range(0,len(move),1):
+               a=AIanalyze(GetLegalMoves(board,board[i],move[j]))
+               accum+=[a]
+               for k in range(0,len(accum),1):
+                  T.AddTree(accum[k])
+      depth+=1
+   accum=[]
+   for i in range(0,63,1):
+      if board[i]>=20:
+         move=GetPieceLegalMoves(board[i])
+         for j in range(0,len(move),1):
+            a=AIanalyze(GetLegalMoves(board,board[i],move[j]))
+            accum+=[a]
+            for k in range(0,len(accum),1):
+               if accum[k]==T.minmax_move():
+                  pos1=board[i]
+                  pos2=move[j]
+   return [pos1,pos2]
+    

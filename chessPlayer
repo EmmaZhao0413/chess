@@ -1,0 +1,666 @@
+class minmax:
+   def __init__(self,player):
+      self.tree=[None,[],player]
+   def AddSuccessor(self):
+      temp=minmax(None)
+      if (self.tree)[2]=="B":
+         temp.tree[2]="W"
+      elif (self.tree)[2]=="W":
+         temp.tree[2]="B"
+      self.tree[1]+=[temp]
+      return True
+   def AddTree(self,score):
+      temp=minmax(None)
+      temp.tree[0]=score
+      if (self.tree)[2]=="B":
+         temp.tree[2]="W"
+      elif (self.tree)[2]=="W":
+         temp.tree[2]="B"
+      self.tree[1]+=[temp] 
+      return True
+   def bubblesort(self):
+      if self.tree[0]!=None:
+         return False
+      else:
+         accum=[]
+         for i in self.tree[1]:
+            if i.tree[0]!=None:
+               accum+=[i.tree[0]]
+         if accum==[]:
+            return True
+         else:
+            if self.tree[2]=='B':
+               self.tree[0]=max(accum)
+            elif self.tree[2]=='W':
+               self.tree[0]=min(accum) 
+      return True
+   def minmax_move(self):
+      for i in range(0,4,1):
+         self.bubblesort()
+         for j in self.tree[1]:
+            j.minmax_move()
+      return True
+   def Get_LevelOrder(self):
+      L=[]
+      x=queue()
+      x.add(self)
+      while (x.size())>0:
+         temp=x.delt()
+         L=L+[temp.tree[0]]
+         for i in temp.tree[1]:
+            x.add(i)
+      return L
+class queue:
+   def __init__(self):
+      self.x=[]
+   def add(self,val):
+      self.x=self.x+[val]
+      return True
+   def delt(self):
+      r=self.x[0]
+      self.x=self.x[1:len(self.x)]
+      return r
+   def size(self):
+      return len(self.x)
+   
+class tree:
+   def __init__(self,x):
+      self.store=[x,[]]
+   def AddSuccessor(self,x):
+      #temp=tree(x)
+      self.store[1]=self.store[1]+[x]
+      return True
+   def Print_DepthFirst(self,level=0):
+      print(' '*level +str(self.store[0]))
+      for i in self.store[1]:
+         i.Print_DepthFirst(level+1)
+      return True
+   def Get_LevelOrder(self):
+      L=[]
+      x=queue()
+      x.add(self)
+      while (x.size())>0:
+         temp=x.delt()
+         L=L+[temp.store[0]]
+         for i in temp.store[1]:
+            x.add(i)
+      return L
+
+def getPiece(name):
+   if name=="pawn":
+      return 0
+   elif name=="knight":
+      return 1
+   elif name=="bishop":
+      return 2
+   elif name=="rook":
+      return 3
+   elif name=="queen":
+      return 4
+   elif name=="king":
+      return 5
+   else:
+      return -1
+def genBoard():
+   r=[0]*64
+   White=10
+   Black=20
+   for i in [ White, Black ]:
+      if i==White:
+         factor=+1
+         shift=0
+      else:
+         factor=-1
+         shift=63
+
+      r[shift+factor*7] = r[shift+factor*0] = i+getPiece("rook")
+      r[shift+factor*6] = r[shift+factor*1] = i+getPiece("knight")
+      r[shift+factor*5] = r[shift+factor*2] = i+getPiece("bishop")
+      if i==White:
+         r[shift+factor*4] = i+getPiece("queen") # queen is on its own color square
+         r[shift+factor*3] = i+getPiece("king")
+      else:
+         r[shift+factor*3] = i+getPiece("queen") # queen is on its own color square
+         r[shift+factor*4] = i+getPiece("king")
+
+      for j in range(0,8):
+         r[shift+factor*(j+8)] = i+getPiece("pawn")
+
+   return r
+
+def printBoard(board):
+   accum="---- BLACK SIDE ----\n"
+   max=63
+   for j in range(0,8,1):
+      for i in range(max-j*8,max-j*8-8,-1):
+         accum=accum+'{0: <5}'.format(board[i])
+      accum=accum+"\n"
+   accum=accum+"---- WHITE SIDE ----"
+   return accum
+
+def printboard(board):
+   accum="---- BLACK SIDE ----\n"
+   max=63
+   for i in range(0,8,1):
+      if i%2==1:
+         for j in range(0,8,1):
+            if j%2==1:
+               accum+='#'
+            elif j%2==0:
+               accum+='_'
+      if i%2==0:
+         for j in range(0,8,1):
+            if j%2==0:
+               accum+='#'
+            elif j%2==1:
+               accum+='_'
+      accum=accum+"\n"
+   accum=accum+"---- WHITE SIDE ----"
+   return accum
+
+def GetPlayerPositions(board,player):
+   W = 10
+   B = 20
+   if (player!=W) and (player!=B):
+      return []
+   else:
+      x0=zip(board,range(0,64,1))
+      x1=filter(lambda x : ((x[0]-player) < W) and ((x[0]-player) >= 0), x0)
+      return map(lambda x:x[1],x1)
+     
+def IsOnBoard(pos):
+   if (pos>=0 and pos<=63):
+      return True
+   else:
+      return False
+
+def GetBishopMoves(pos):
+   nr = pos % 8
+   nl = 7 - (pos % 8)
+   accum=[]
+   ul = pos
+   ll = pos
+   ur = pos
+   lr = pos
+   for i in range(0,nr,1):
+      ur += 7
+      lr -= 9
+      if IsOnBoard(lr):
+         accum += [lr]
+      if IsOnBoard(ur):
+         accum += [ur]
+
+   for i in range(0,nl,1):
+      ul += 9
+      ll -= 7
+      if IsOnBoard(ul):
+         accum += [ul]
+      if IsOnBoard(ll):
+         accum += [ll]
+   return accum
+
+def GetPawnWMoves(pos):
+   accum=[]
+   u=pos
+   u=u+8
+   if IsOnBoard(u):
+      accum+=[u]
+   return accum
+def GetPawnBMoves(pos):
+   accum=[]
+   d=pos
+   d=d-8
+   if IsOnBoard(d):
+      accum+=[d]
+   return accum
+def GetKnightMoves(pos):
+   lu=ul=ru=ur=ld=dl=rd=dr=pos
+   accum=[]
+   lu+=17
+   ul+=6
+   ru+=15
+   ur+=10
+   ld-=17
+   dl-=10
+   rd-=15
+   dr-=6
+   if IsOnBoard(lu):
+      accum += [lu]
+   if IsOnBoard(ul):
+      accum += [ul]
+   if IsOnBoard(ru):
+      accum += [ru]
+   if IsOnBoard(ur):
+      accum += [ur]
+   if IsOnBoard(ld):
+      accum += [ld]
+   if IsOnBoard(dl):
+      accum += [dl]
+   if IsOnBoard(rd):
+      accum += [rd]
+   if IsOnBoard(dr):
+      accum += [dr]
+   return accum
+   
+def GetRookMoves(pos):
+   nl = pos % 8
+   nr = 7-(pos%8)
+   nd = pos//8
+   nu = 7-(pos//8)
+   accum=[]
+   l=r=u=d=pos
+   for i in range(0,nl,1):
+      l -= 1
+      if IsOnBoard(l):
+         accum += [l]
+
+   for i in range(0,nr,1):
+      r += 1
+      if IsOnBoard(r):
+         accum += [r]
+
+   for i in range(0,nd,1):
+      d -= 8
+      if IsOnBoard(d):
+         accum += [d]
+
+   for i in range(0,nu,1):
+      u += 8
+      if IsOnBoard(u):
+         accum += [u]
+
+   return accum
+
+def GetQueenMoves(pos):
+   return GetRookMoves(pos) + GetBishopMoves(pos)
+
+def GetKingMoves(pos):
+   l=r=u=d=pos
+   accum=[]
+   l-=1
+   r+=1
+   d-=8
+   u+=8
+   ul = pos
+   ll = pos
+   ur = pos
+   lr = pos
+   ur += 7
+   lr -= 9
+   if IsOnBoard(lr):
+      accum += [lr]
+   if IsOnBoard(ur):
+      accum += [ur]
+   ul += 9
+   ll -= 7
+   if IsOnBoard(ul):
+      accum += [ul]
+   if IsOnBoard(ll):
+      accum += [ll]
+   if IsOnBoard(l):
+      accum += [l]
+   if IsOnBoard(r):
+      accum += [r]
+   if IsOnBoard(d):
+      accum += [d]
+   if IsOnBoard(u):
+      accum += [u]
+   return accum
+
+def GetPieceLegalMoves(board,position):
+   pos=board[position]%10
+   accum=[]
+   a=[]
+   if position>63 or position <0:
+      return []
+   if board[position]==10:
+      accum+= GetPawnWMoves(position)
+      if position<=54:
+         if board[position+7]>=20:
+            if IsOnBoard(position+7):
+               accum+=[position+7]
+         elif board[position+9]>=20:
+            if IsOnBoard(position+9):
+               accum+=[position+9]
+   if board[position]==20:
+      accum+= GetPawnBMoves(position)
+      if position>=14:
+         if board[position-7]>=10 and board[position-7]<=20:
+            if IsOnBoard(position-7):
+               accum+=[position-7]
+         elif board[position-9]>=10 and board[position-7]<=20:
+            if IsOnBoard(position-9):         
+               accum+=[position-9]
+
+   if pos==1:
+      accum+= GetKnightMoves(position)
+   if pos==2 or pos==4:
+      accum+= GetBishopMoves(position)
+      for i in accum:
+         diff=i-position
+         if diff<0:
+            if diff%7==0:
+               for j in range (0,len(accum),1):
+                  if (accum[j]<i) and (accum[j]-position)%7==0:
+                     accum[j]=-1
+            elif diff%9==0:
+               for j in range (0,len(accum),1):
+                  if (accum[j]<i) and (accum[j]-position)%9==0:
+                     accum[j]=-1
+         elif diff>0:
+            if diff%7==0:
+               for j in range (0,len(accum),1):
+                  if (accum[j]>i) and (accum[j]-position)%7==0:
+                     accum[j]=-1
+            elif diff%9==0:
+               for j in range (0,len(accum),1):
+                  if (accum[j]>i) and (accum[j]-position)%9==0:
+                     accum[j]=-1
+   if pos==3 or pos==4:
+      accum+= GetRookMoves(position)
+      for i in accum:
+         nl=pos%8
+         nr=7-(pos%8)
+         diff=i-position
+         if diff>0:
+            if diff%8==0:
+               for j in range(0,len(accum),1):
+                  if accum[j]>i:
+                     accum[j]=-1
+            else:
+               r=pos+nr
+               for j in range(0,len(accum),1):
+                  if accum[j]>i and accum[j]<=r:
+                     accum[j]=-1
+         if diff<0:
+            if diff%8==0:
+               for j in range(0,len(accum),1):
+                  if accum[j]<i:
+                     accum[j]=-1
+            else:
+               r=pos+nr
+               for j in range(0,len(accum),1):
+                  if accum[j]<i and accum[j]>=r:
+                     accum[j]=-1
+   if pos==5:
+      accum+= GetKingMoves(position)
+   if board[position]>=20:
+      for i in range(0,len(accum),1):
+         if board[(accum[i])]>=10 and board[(accum[i])]<20:
+            a+=[accum[i]]
+         elif board[(accum[i])]==0:
+            a+=[accum[i]]
+   elif board[position]>=10 and board[position]<20:
+      for i in range(0,len(accum),1):
+         if board[(accum[i])]>=20:
+            a+=[accum[i]]
+         elif board[(accum[i])]==0:
+            a+=[accum[i]]
+   return a
+
+def GetLegalMoves(board,position1,position2):
+   legalpos=GetPieceLegalMoves(board,position1)
+   for i in legalpos:
+      if position2==i:
+         board[position2]=board[position1]
+         board[position1]=0
+         return board
+
+   
+def IsPositionUnderThreat(board,position, player):
+   if player=='W':
+      for i in range(0,64,1):
+         if board[i]>=20:
+            for j in GetLegalMoves(board,i):
+               if j==position:
+                  return True
+               else:
+                  return False
+   if player=='B':
+      for i in range(0,64,1):
+         if board[i]>=10 and board[i]<=15:
+            for j in GetLegalMoves(board,i):
+               if j==position:
+                  return True
+               else:
+                  return False
+
+def analyzeboard(board):
+   for i in range(0,64,1):
+      if board[i]==15:
+         state=0
+         break
+      elif board[i]!=15:
+         state=2
+   for i in range(0,64,1):
+      if board[i]==25:
+         state=0
+         break
+      elif board[i]!=25:
+         state=1
+   return state
+
+def reverseArray(l):
+   rl=[]
+   for i in range(len(l),0,-1):
+      rl=rl+[l[len(l)-i]]
+   return rl
+
+def evaluatepiece(board,pos):
+   rval=0
+   pawnWhite=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+         5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0,
+         1.0, 1.0, 2.0 ,3.0, 3.0, 2.0, 1.0, 1.0,
+         0.5, 0.5, 1.0, 2.5, 2.5, 1.0, 0.5, 0.5,
+         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+         0.5,-0.5,-1.0, 0.0, 0.0,-1.0,-0.5, 0.5,
+         0.5, 1.0, 1.0,-2.0,-2.0, 1.0, 1.0, 0.5,
+         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+   pawnBlack= reverseArray(pawnWhite)
+   knightEval =[-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0,
+               -4.0, -2.0,  0.0,  0.0,  0.0,  0.0, -2.0, -4.0,
+               -3.0,  0.0,  1.0,  1.5,  1.5,  1.0,  0.0, -3.0,
+               -3.0,  0.5,  1.5,  2.0,  2.0,  1.5,  0.5, -3.0,
+               -3.0,  0.0,  1.5,  2.0,  2.0,  1.5,  0.0, -3.0,
+               -3.0,  0.5,  1.0,  1.5,  1.5,  1.0,  0.5, -3.0,
+               -4.0, -2.0,  0.0,  0.5,  0.5,  0.0, -2.0, -4.0,
+               -5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0]
+
+   bishopWhite =[-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0,
+                -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0,
+                -1.0,  0.0,  0.5,  1.0,  1.0,  0.5,  0.0, -1.0,
+                -1.0,  0.5,  0.5,  1.0,  1.0,  0.5,  0.5, -1.0,
+                -1.0,  0.0,  1.0,  1.0,  1.0,  1.0,  0.0, -1.0,
+                -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, -1.0,
+                -1.0,  0.5,  0.0,  0.0,  0.0,  0.0,  0.5, -1.0,
+                -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0]
+
+   bishopBlack = reverseArray(bishopWhite)
+
+   rookWhite =[0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+              0.5,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.5,
+              -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5,
+              -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5,
+              -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5,
+              -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5,
+              -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5,
+              0.0,   0.0, 0.0,  0.5,  0.5,  0.0,  0.0,  0.0]
+
+   rookBlack = reverseArray(rookWhite)
+
+   queenEval =[-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0,
+              -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0,
+              -1.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0,
+              -0.5,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5,
+              0.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5,
+              -1.0,  0.5,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0,
+              -1.0,  0.0,  0.5,  0.0,  0.0,  0.0,  0.0, -1.0,
+              -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0]
+
+   kingWhite =[-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0,
+              -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0,
+              -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0,
+              -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0,
+              -2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0,
+              -1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0,
+              2.0,  2.0,  0.0,  0.0,  0.0,  0.0,  2.0,  2.0,
+              2.0,  3.0,  1.0,  0.0,  0.0,  1.0,  3.0,  2.0]
+
+   kingBlack = reverseArray(kingWhite)
+   if board[pos]==10:
+      rval+=board[pos]+pawnWhite[pos]
+   elif board[pos]==11 or board[pos]==21:
+      rval+=board[pos]+knightEval[pos]
+   elif board[pos]==12:
+      rval+=board[pos]+bishopWhite[pos]
+   elif board[pos]==13:
+      rval+=board[pos]+rookWhite[pos]
+   elif board[pos]==14:
+      rval+=board[pos]+queenEval[pos]
+   elif board[pos]==15:
+      rval+=board[pos]+kingWhite[pos]
+   elif board[pos]==20:
+      rval+=board[pos]+pawnBlack[pos]
+   elif board[pos]==22:
+      rval+=board[pos]+bishopBlack[pos]
+   elif board[pos]==23:
+      rval+=board[pos]+rookBlack[pos]
+   elif board[pos]==24:
+      rval+=board[pos]+queenEval[pos]
+   elif board[pos]==25:
+      rval+=board[pos]+kingBlack[pos]
+   return rval
+
+
+def AIanalyze(board): 
+   black=0
+   white=0
+   accum=0
+   for i in range(15,48,1):
+      if board[i]>=20:
+         pos=board[i]%10
+         if pos==5:
+            black=black+900
+         elif pos==4:
+            black=black+90
+         elif pos==3:
+            black+=50
+         elif pos==2:
+            black+=30
+         elif pos==1:
+            black+=20
+         elif board[i]==20:
+            black+=10
+         black+=evaluatepiece(board,i)
+      elif board[i]>=10 and board[i]<=20:
+         pos=board[i]%10
+         if pos==5:
+            white=white+900
+         elif pos==4:
+            white+=90
+         elif pos==3:
+            white+=50
+         elif pos==2:
+            white+=30
+         elif pos==1:
+            white+=30
+         elif board[i]==10:
+            white+=10
+         white-=evaluatepiece(board,i)
+   accum+=(black-white)
+   return accum
+
+def minmax_Board(board):
+   b=tree(board)
+   move1=[]
+   move2=[]
+   move3=[]   
+   for n in range(0,64,1):
+      move1=[]
+      if board[n]>=20:
+         move1+=GetPieceLegalMoves(board,n)
+      for i in move1:
+         board_copy1=list(board)
+         GetLegalMoves(board_copy1,n,i)
+         subboard1=tree(board_copy1)
+         if AIanalyze(board)<AIanalyze(board_copy1):
+            b.AddSuccessor(subboard1)
+   for subboard1 in b.store[1]:
+      for n1 in range(0,64,1):
+         move2=[]
+         if subboard1.store[0][n1]<20 and subboard1.store[0][n1]>=10:
+            move2+=GetPieceLegalMoves(subboard1.store[0],n1)
+         for i1 in move2:
+            board_copy2=list(subboard1.store[0])
+            GetLegalMoves(board_copy2,n1,i1)
+            subboard2=tree(board_copy2)
+            if AIanalyze(subboard1.store[0])>AIanalyze(board_copy2):
+               subboard1.AddSuccessor(subboard2)
+   #   for subboard2 in subboard1.store[1]:
+    #     for n2 in range(0,64,1):
+     #       if subboard2.store[0][n2]>=20:
+      #         move3+=GetPieceLegalMoves(subboard2.store[0],n2)
+       #     for i2 in move3:
+        #       board_copy3=list(subboard2.store[0])
+         #      GetLegalMoves(board_copy3,n2,i2)
+          #     subboard3=tree(board_copy3)
+           #    if AIanalyze(subboard2.store[0])<AIanalyze(board_copy3):
+            #      subboard2.AddSuccessor(subboard3)
+   return b
+
+def minmax_score(board):
+   board_copy=list(board)
+   boards=tree(board_copy)
+   boards=minmax_Board(board_copy)
+   s=minmax("B")
+   pos1=0
+   pos2=0
+   accum=[]
+   a=0
+   for i in range(0,len(boards.store[1]),1):
+      s.AddSuccessor()
+   for i in range(0,len(s.tree[1]),1):
+      for j in range(0,len(boards.store[1][i].store[1]),1):
+         (s.tree[1][i]).AddSuccessor()
+   for i in range (0,len(s.tree[1]),1):    
+      for j in range(0,len(s.tree[1][i].tree[1]),1):
+        #  print(printBoard(boards.store[1][i].store[1][j].store[0]))
+          s.tree[1][i].AddTree(AIanalyze(boards.store[1][i].store[1][j].store[0]))
+        # for k in range(0,len(((boards.store[1][i]).store[1][j]).store[1]),1):
+         #   s.tree[1][i].tree[1][j].AddTree(AIanalyze(boards.store[1][i].store[1][j].store[1][k].store[0]))
+   s.minmax_move()
+   for i in range(0,len(boards.store[1]),1):
+      for j in range(0,len(boards.store[1][i].store[1]),1):
+        # for k in range(0,len(((boards.store[1][i]).store[1][j]).store[1]),1):  
+         a=AIanalyze(boards.store[1][i].store[1][j].store[0])
+         if a==s.tree[0]:
+            accum=list(boards.store[1][i].store[1][j].store[0])
+            break
+#   print(len(accum))
+   for i in range(0,64,1):
+      if board[i]!=0 and accum[i]==0:
+         pos1=i
+      elif board[i]==0 and accum[i]!=0:
+         pos2=i
+   return [pos1,pos2,a,s]
+
+def chessPlayer(board,player):
+   Move=[]
+   candidateMoves=[]
+   minmax=minmax_score(board)
+   Move+=[minmax[0]]
+   Move+=[minmax[1]]
+   s=minmax[3]
+   candidateMoves2=minmax_score(board)[2]
+   candidateMoves+=[Move]
+   candidateMoves+=[candidateMoves2]
+   if Move==[0,0]:
+      status=False
+   else:
+      status=True
+   evalTree=s.Get_LevelOrder()
+   return [status,Move,candidateMoves,evalTree]
+   
+
+   
+

@@ -1,0 +1,26 @@
+from chessPlayer import*
+T=genBoard()
+while True:
+   print(printBoard(T))
+   moveW=int(input('White Move?'))
+   if (moveW>63) or (moveW<0):
+      break
+      print("not valid")
+   else:
+      accum=GetPieceLegalMoves(T,moveW)
+      for i in range(0,len(accum),1):
+         print(accum[i])
+      moveW1=int(input('move to?'))
+      while GetLegalMoves(T,moveW,moveW1)==False:
+         moveW1=int(input('move to?'))
+   state=analyzeboard(T)
+   if state==1:
+      print("white won!")
+   
+
+   print(printBoard(T))
+   best=minmax_score(T)
+   GetLegalMoves(T,best[0],best[1])   
+   state=analyzeboard(T)
+   if state==2:
+      print("black won!")
